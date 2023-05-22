@@ -30,9 +30,11 @@ import org.apache.cloudstack.api.response.AccountResponse;
 import org.apache.cloudstack.api.response.ClusterResponse;
 import org.apache.cloudstack.api.response.ConfigurationResponse;
 import org.apache.cloudstack.api.response.ImageStoreResponse;
+import org.apache.cloudstack.api.response.NetworkResponse;
 import org.apache.cloudstack.api.response.StoragePoolResponse;
 import org.apache.cloudstack.api.response.ZoneResponse;
 import org.apache.cloudstack.config.Configuration;
+import org.apache.cloudstack.framework.config.ConfigKey;
 import org.apache.commons.lang3.StringUtils;
 
 import com.cloud.user.Account;
@@ -89,6 +91,12 @@ public class UpdateCfgCmd extends BaseCmd {
             validations = ApiArgValidator.PositiveNumber)
     private Long imageStoreId;
 
+    @Parameter(name = ApiConstants.NETWORK_ID,
+               type = CommandType.UUID,
+               entityType = NetworkResponse.class,
+               description = "the ID of the Network to update the parameter value for corresponding network")
+    private Long networkId;
+
     /////////////////////////////////////////////////////
     /////////////////// Accessors ///////////////////////
     /////////////////////////////////////////////////////
@@ -129,6 +137,10 @@ public class UpdateCfgCmd extends BaseCmd {
         return imageStoreId;
     }
 
+    public Long getNetworkId() {
+        return networkId;
+    }
+
     /////////////////////////////////////////////////////
     /////////////// API Implementation///////////////////
     /////////////////////////////////////////////////////
@@ -164,6 +176,9 @@ public class UpdateCfgCmd extends BaseCmd {
             }
             if (getDomainId() != null) {
                 response.setScope("domain");
+            }
+            if (getNetworkId() != null) {
+                response.setScope(ConfigKey.Scope.Network.name());
             }
             response.setValue(value);
             this.setResponseObject(response);
