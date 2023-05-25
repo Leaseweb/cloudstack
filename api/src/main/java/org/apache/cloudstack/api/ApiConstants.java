@@ -32,6 +32,7 @@ public class ApiConstants {
     public static final String ALLOCATED_ONLY = "allocatedonly";
     public static final String ANNOTATION = "annotation";
     public static final String API_KEY = "apikey";
+    public static final String ARCHIVED = "archived";
     public static final String ASYNC_BACKUP = "asyncbackup";
     public static final String AUTO_SELECT = "autoselect";
     public static final String USER_API_KEY = "userapikey";
@@ -93,6 +94,7 @@ public class ApiConstants {
     public static final String CLUSTER_TYPE = "clustertype";
     public static final String CN = "cn";
     public static final String COMMAND = "command";
+    public static final String CONFIG = "config";
     public static final String CMD_EVENT_TYPE = "cmdeventtype";
     public static final String COMPONENT = "component";
     public static final String CPU_CORE_PER_SOCKET = "cpucorepersocket";
@@ -384,6 +386,7 @@ public class ApiConstants {
     public static final String SENT = "sent";
     public static final String SENT_BYTES = "sentbytes";
     public static final String SERIAL = "serial";
+    public static final String SERVICE_IP = "serviceip";
     public static final String SERVICE_OFFERING_ID = "serviceofferingid";
     public static final String SESSIONKEY = "sessionkey";
     public static final String SHOW_CAPACITIES = "showcapacities";
@@ -521,6 +524,7 @@ public class ApiConstants {
     public static final String PRIVATE_NETWORK_ID = "privatenetworkid";
     public static final String ALLOCATION_STATE = "allocationstate";
     public static final String MANAGED_STATE = "managedstate";
+    public static final String MANAGEMENT_SERVER_ID = "managementserverid";
     public static final String STORAGE_ID = "storageid";
     public static final String PING_STORAGE_SERVER_IP = "pingstorageserverip";
     public static final String PING_DIR = "pingdir";
@@ -616,6 +620,7 @@ public class ApiConstants {
     public static final String LOAD_BALANCER_DEVICE_STATE = "lbdevicestate";
     public static final String LOAD_BALANCER_DEVICE_CAPACITY = "lbdevicecapacity";
     public static final String LOAD_BALANCER_DEVICE_DEDICATED = "lbdevicededicated";
+    public static final String LOAD_BALANCER_ID = "loadbalancerid";
     public static final String LOAD_BALANCER_RULE = "loadbalancerrule";
     public static final String LOAD_BALANCER_RULE_LIST = "loadbalancerrulelist";
     public static final String FIREWALL_DEVICE_ID = "fwdeviceid";
@@ -1016,9 +1021,14 @@ public class ApiConstants {
     public static final String LOGOUT = "logout";
     public static final String LIST_IDPS = "listIdps";
 
+    public static final String READY_FOR_SHUTDOWN = "readyforshutdown";
+    public static final String SHUTDOWN_TRIGGERED = "shutdowntriggered";
+    public static final String PENDING_JOBS_COUNT = "pendingjobscount";
+
     public static final String PUBLIC_MTU = "publicmtu";
     public static final String PRIVATE_MTU = "privatemtu";
     public static final String MTU = "mtu";
+    public static final String AUTO_ENABLE_KVM_HOST = "autoenablekvmhost";
     public static final String LIST_APIS = "listApis";
 
     /**

@@ -6,7 +6,7 @@
 // "License"); you may not use this file except in compliance
 // with the License.  You may obtain a copy of the License at
 //
-//   http://www.apache.org/licenses/LICENSE-2.0
+// http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing,
 // software distributed under the License is distributed on an
@@ -47,11 +47,11 @@
             showSearch
             optionFilterProp="label"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }" >
-            <a-select-option value="roundrobin">{{ $t('label.lb.algorithm.roundrobin') }}</a-select-option>
-            <a-select-option value="leastconn">{{ $t('label.lb.algorithm.leastconn') }}</a-select-option>
-            <a-select-option value="source">{{ $t('label.lb.algorithm.source') }}</a-select-option>
+            <a-select-option value="roundrobin" :label="$t('label.lb.algorithm.roundrobin')">{{ $t('label.lb.algorithm.roundrobin') }}</a-select-option>
+            <a-select-option value="leastconn" :label="$t('label.lb.algorithm.leastconn')">{{ $t('label.lb.algorithm.leastconn') }}</a-select-option>
+            <a-select-option value="source" :label="$t('label.lb.algorithm.source')">{{ $t('label.lb.algorithm.source') }}</a-select-option>
           </a-select>
         </div>
         <div class="form__item">
@@ -62,11 +62,12 @@
             showSearch
             optionFilterProp="label"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }" >
-            <a-select-option value="tcp-proxy">{{ $t('label.tcp.proxy') }}</a-select-option>
-            <a-select-option value="tcp">{{ $t('label.tcp') }}</a-select-option>
-            <a-select-option value="udp">{{ $t('label.udp') }}</a-select-option>
+            <a-select-option value="tcp-proxy" :label="$t('label.tcp.proxy')">{{ $t('label.tcp.proxy') }}</a-select-option>
+            <a-select-option value="tcp" :label="$t('label.tcp')">{{ $t('label.tcp') }}</a-select-option>
+            <a-select-option value="udp" :label="$t('label.udp')">{{ $t('label.udp') }}</a-select-option>
+            <a-select-option value="ssl" :label="$t('label.ssl')">{{ $t('label.ssl') }}</a-select-option>
           </a-select>
         </div>
         <div class="form__item">
@@ -76,13 +77,19 @@
             defaultValue="no"
             style="min-width: 100px"
             showSearch
-            optionFilterProp="label"
+            optionFilterProp="value"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }" >
             <a-select-option value="yes">{{ $t('label.yes') }}</a-select-option>
             <a-select-option value="no">{{ $t('label.no') }}</a-select-option>
           </a-select>
+        </div>
+        <div class="form__item">
+          <div class="form__label">{{ $t('label.sslcertificates') }}</div>
+          <a-button :disabled="!('createLoadBalancerRule' in $store.getters.apis)" type="primary" @click="handleOpenAddSslCertModal(null)">
+            {{ $t('label.sslcertificate') }}
+          </a-button>
         </div>
         <div class="form__item" v-if="!newRule.autoscale || newRule.autoscale === 'no' || ('vpcid' in this.resource && !('associatednetworkid' in this.resource))">
           <div class="form__label" style="white-space: nowrap;">{{ $t('label.add.vms') }}</div>
@@ -98,7 +105,6 @@
         </div>
       </div>
     </div>
-
     <a-divider />
     <a-button
       v-if="(('deleteLoadBalancerRule' in $store.getters.apis) && this.selectedItems.length > 0)"
@@ -118,42 +124,71 @@
       :pagination="false"
       :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
       :rowKey="record => record.id">
-      <template #cidrlist="{ record }">
-        <span style="white-space: pre-line"> {{ record.cidrlist?.replaceAll(" ", "\n") }}</span>
-      </template>
-      <template #algorithm="{ record }">
-        {{ returnAlgorithmName(record.algorithm) }}
-      </template>
-      <template #protocol="{record}">
-        {{ getCapitalise(record.protocol) }}
-      </template>
-      <template #stickiness="{record}">
-        <a-button @click="() => openStickinessModal(record.id)">
-          {{ returnStickinessLabel(record.id) }}
-        </a-button>
-      </template>
-      <template #autoscale="{record}">
-        <div>
-          <router-link :to="{ path: '/autoscalevmgroup/' + record.autoscalevmgroup.id }" v-if='record.autoscalevmgroup'>
-            <a-button>{{ $t('label.view') }}</a-button>
-          </router-link>
-          <router-link :to="{ path: '/action/createAutoScaleVmGroup', query: { networkid: record.networkid, lbruleid : record.id } }" v-else-if='!record.ruleInstances'>
-            <a-button>{{ $t('label.new') }}</a-button>
-          </router-link>
-        </div>
-      </template>
-      <template #healthmonitor="{ record }">
-        <a-button @click="() => openHealthMonitorModal(record.id)">
-          {{ returnHealthMonitorLabel(record.id) }}
-        </a-button>
-      </template>
-      <template #add="{record}">
-        <a-button type="primary" @click="() => { selectedRule = record; handleOpenAddVMModal() }" v-if='!record.autoscalevmgroup'>
-          <template #icon>
-            <plus-outlined />
-          </template>
-          {{ $t('label.add') }}
-        </a-button>
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'cidrlist'">
+          <span style="white-space: pre-line"> {{ record.cidrlist?.replaceAll(" ", "\n") }}</span>
+        </template>
+        <template v-if="column.key === 'algorithm'">
+          {{ returnAlgorithmName(record.algorithm) }}
+        </template>
+        <template v-if="column.key === 'protocol'">
+          {{ getCapitalise(record.protocol) }}
+        </template>
+        <template v-if="column.key === 'stickiness'">
+          <a-button @click="() => openStickinessModal(record.id)">
+            {{ returnStickinessLabel(record.id) }}
+          </a-button>
+        </template>
+        <template v-if="column.key === 'configuration'">
+          <a-button @click="() => { selectedRule = record; handleOpenAddConfiguration() }">
+            {{ $t('label.configure') }}
+          </a-button>
+        </template>
+        <template v-if="column.key === 'sslcert'">
+          <a-button :disabled="record.protocol !== 'ssl'" @click="() => { selectedRule = record; handleOpenAddSslCertModal() }">
+            {{ $t('label.add.ssl.cert') }}
+          </a-button>
+        </template>
+        <template v-if="column.key === 'autoscale'">
+          <div>
+            <router-link :to="{ path: '/autoscalevmgroup/' + record.autoscalevmgroup.id }" v-if='record.autoscalevmgroup'>
+              <a-button>{{ $t('label.view') }}</a-button>
+            </router-link>
+            <router-link :to="{ path: '/action/createAutoScaleVmGroup', query: { networkid: record.networkid, lbruleid : record.id } }" v-else-if='!record.ruleInstances'>
+              <a-button>{{ $t('label.new') }}</a-button>
+            </router-link>
+          </div>
+        </template>
+        <template v-if="column.key === 'healthmonitor'">
+          <a-button @click="() => openHealthMonitorModal(record.id)">
+            {{ returnHealthMonitorLabel(record.id) }}
+          </a-button>
+        </template>
+        <template v-if="column.key === 'add'">
+          <a-button v-if="!record.autoscalevmgroup" type="primary" @click="() => { selectedRule = record; handleOpenAddVMModal() }">
+            <template #icon><plus-outlined /></template>
+              {{ $t('label.add') }}
+          </a-button>
+        </template>
+        <template v-if="column.key === 'actions'">
+          <div class="actions">
+            <tooltip-button :tooltip="$t('label.edit')" icon="edit-outlined" @onClick="() => openEditRuleModal(record)" />
+            <tooltip-button :tooltip="$t('label.edit.tags')" :disabled="!('updateLoadBalancerRule' in $store.getters.apis)" icon="tag-outlined" @onClick="() => openTagsModal(record.id)" />
+            <a-popconfirm
+              :title="$t('label.delete') + '?'"
+              @confirm="handleDeleteRule(record)"
+              :okText="$t('label.yes')"
+              :cancelText="$t('label.no')"
+            >
+              <tooltip-button
+                :tooltip="$t('label.delete')"
+                :disabled="!('deleteLoadBalancerRule' in $store.getters.apis)"
+                type="primary"
+                :danger="true"
+                icon="delete-outlined" />
+            </a-popconfirm>
+          </div>
+        </template>
       </template>
       <template #expandedRowRender="{ record }">
         <div class="rule-instance-list">
@@ -176,25 +211,6 @@
                 @onClick="() => handleDeleteInstanceFromRule(instance, record, ip)" />
             </div>
           </div>
-        </div>
-      </template>
-      <template #actions="{record}">
-        <div class="actions">
-          <tooltip-button :tooltip="$t('label.edit')" icon="edit-outlined" @onClick="() => openEditRuleModal(record)" />
-          <tooltip-button :tooltip="$t('label.edit.tags')" :disabled="!('updateLoadBalancerRule' in $store.getters.apis)" icon="tag-outlined" @onClick="() => openTagsModal(record.id)" />
-          <a-popconfirm
-            :title="$t('label.delete') + '?'"
-            @confirm="handleDeleteRule(record)"
-            :okText="$t('label.yes')"
-            :cancelText="$t('label.no')"
-          >
-            <tooltip-button
-              :tooltip="$t('label.delete')"
-              :disabled="!('deleteLoadBalancerRule' in $store.getters.apis) || record.autoscalevmgroup"
-              type="primary"
-              :danger="true"
-              icon="delete-outlined" />
-          </a-popconfirm>
         </div>
       </template>
     </a-table>
@@ -296,12 +312,12 @@
             showSearch
             optionFilterProp="label"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }" >
-            <a-select-option value="LbCookie">{{ $t('label.lb.cookie') }}</a-select-option>
-            <a-select-option value="AppCookie">{{ $t('label.app.cookie') }}</a-select-option>
-            <a-select-option value="SourceBased">{{ $t('label.source.based') }}</a-select-option>
-            <a-select-option value="none">{{ $t('label.none') }}</a-select-option>
+            <a-select-option value="LbCookie" :label="$t('label.lb.cookie')">{{ $t('label.lb.cookie') }}</a-select-option>
+            <a-select-option value="AppCookie" :label="$t('label.app.cookie')">{{ $t('label.app.cookie') }}</a-select-option>
+            <a-select-option value="SourceBased" :label="$t('label.source.based')">{{ $t('label.source.based') }}</a-select-option>
+            <a-select-option value="none" :label="$t('label.none')">{{ $t('label.none') }}</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item
@@ -390,11 +406,11 @@
             showSearch
             optionFilterProp="label"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }" >
-            <a-select-option value="roundrobin">{{ $t('label.lb.algorithm.roundrobin') }}</a-select-option>
-            <a-select-option value="leastconn">{{ $t('label.lb.algorithm.leastconn') }}</a-select-option>
-            <a-select-option value="source">{{ $t('label.lb.algorithm.source') }}</a-select-option>
+            <a-select-option value="roundrobin" :label="$t('label.lb.algorithm.roundrobin')">{{ $t('label.lb.algorithm.roundrobin') }}</a-select-option>
+            <a-select-option value="leastconn" :label="$t('label.lb.algorithm.leastconn')">{{ $t('label.lb.algorithm.leastconn') }}</a-select-option>
+            <a-select-option value="source" :label="$t('label.lb.algorithm.source')">{{ $t('label.lb.algorithm.source') }}</a-select-option>
           </a-select>
         </div>
         <div class="edit-rule__item">
@@ -404,11 +420,12 @@
             showSearch
             optionFilterProp="label"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }" >
-            <a-select-option value="tcp-proxy">{{ $t('label.tcp.proxy') }}</a-select-option>
-            <a-select-option value="tcp">{{ $t('label.tcp') }}</a-select-option>
-            <a-select-option value="udp">{{ $t('label.udp') }}</a-select-option>
+            <a-select-option value="tcp-proxy" :label="$t('label.tcp.proxy')">{{ $t('label.tcp.proxy') }}</a-select-option>
+            <a-select-option value="tcp" :label="$t('label.tcp')">{{ $t('label.tcp') }}</a-select-option>
+            <a-select-option value="udp" :label="$t('label.udp')">{{ $t('label.udp') }}</a-select-option>
+            <a-select-option value="ssl" :label="$t('label.ssl')">{{ $t('label.ssl') }}</a-select-option>
           </a-select>
         </div>
         <div :span="24" class="action-button">
@@ -441,12 +458,13 @@
             showSearch
             optionFilterProp="label"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }" >
             <a-select-option
               v-for="tier in tiers.data"
               :loading="tiers.loading"
-              :key="tier.id">
+              :key="tier.id"
+              :label="tier.displaytext">
               {{ tier.displaytext }}
             </a-select-option>
           </a-select>
@@ -467,33 +485,39 @@
           :pagination="false"
           :rowKey="record => record.id"
           :scroll="{ y: 300 }">
-          <template #name="{text, record, index}">
-            <span>
-              {{ text }}
-            </span>
-            <loading-outlined v-if="addVmModalNicLoading" />
-            <a-select
-              style="display: block"
-              v-else-if="!addVmModalNicLoading && newRule.virtualmachineid[index] === record.id"
-              mode="multiple"
-              v-model:value="newRule.vmguestip[index]"
-              showSearch
-              optionFilterProp="label"
-              :filterOption="(input, option) => {
-                return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }" >
-              <a-select-option v-for="(nic, nicIndex) in nics[index]" :key="nic" :value="nic">
-                {{ nic }}{{ nicIndex === 0 ? ` (${$t('label.primary')})` : null }}
-              </a-select-option>
-            </a-select>
-          </template>
+          <template #bodyCell="{ column, text, record, index }">
+            <template v-if="column.key === 'name'">
+              <span>
+                {{ text }}
+              </span>
+              <loading-outlined v-if="addVmModalNicLoading" />
+              <a-select
+                style="display: block"
+                v-else-if="!addVmModalNicLoading && newRule.virtualmachineid[index] === record.id"
+                mode="multiple"
+                v-model:value="newRule.vmguestip[index]"
+                showSearch
+                optionFilterProp="label"
+                :filterOption="(input, option) => {
+                  return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }" >
+                <a-select-option
+                  v-for="(nic, nicIndex) in nics[index]"
+                  :key="nic"
+                  :value="nic"
+                  :label="nic + nicIndex === 0 ? ` (${$t('label.primary')})` : null">
+                  {{ nic }}{{ nicIndex === 0 ? ` (${$t('label.primary')})` : null }}
+                </a-select-option>
+              </a-select>
+            </template>
 
-          <template #state="{text}">
-            <status :text="text ? text : ''" displayText></status>
-          </template>
+            <template v-if="column.key === 'state'">
+              <status :text="text ? text : ''" displayText></status>
+            </template>
 
-          <template #action="{text, record, index}" style="text-align: center" :text="text">
-            <a-checkbox v-model:value="record.id" @change="e => fetchNics(e, index)" :disabled="newRule.autoscale" />
+            <template v-if="column.key === 'actions'" style="text-align: center" :text="text">
+              <a-checkbox v-model:value="record.id" @change="e => fetchNics(e, index)" :disabled="newRule.autoscale"/>
+            </template>
           </template>
         </a-table>
         <a-pagination
@@ -540,9 +564,9 @@
             v-model:value="monitorForm.type"
             @change="(value) => { healthMonitorParams.type = value }"
             showSearch
-            optionFilterProp="label"
+            optionFilterProp="value"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }">
             <a-select-option value="PING">PING</a-select-option>
             <a-select-option value="TCP">TCP</a-select-option>
@@ -567,9 +591,9 @@
             v-focus="true"
             v-model:value="monitorForm.httpmethodtype"
             showSearch
-            optionFilterProp="label"
+            optionFilterProp="value"
             :filterOption="(input, option) => {
-              return option.children[0].children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              return option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }">
             <a-select-option value="GET">GET</a-select-option>
             <a-select-option value="HEAD">HEAD</a-select-option>
@@ -613,6 +637,148 @@
       @group-action="deleteRules"
       @handle-cancel="handleCancel"
       @close-modal="closeModal" />
+
+    <a-modal
+      :title="$t('label.add.load.balancer.config')"
+      v-if="addLbConfigVisible"
+      :visible="addLbConfigVisible"
+      class="vm-modal"
+      width="85vw"
+      @ok="closeModal"
+      @cancel="closeModal"
+    >
+      <div>
+        <div class="form" style="margin-right: 0 !important;">
+          <div class="form__item">
+            <div class="form__label">{{ $t('label.lb.config.name') }}</div>
+            <br>
+            <a-select v-model:value="lbConfig.name" style="width: 80%;" @change="populateValues">
+              <a-select-option
+                v-for="config in lbConfigs"
+                :key="config.name">{{ config.name }}
+              </a-select-option>
+            </a-select>
+          </div>
+          <div class="form__item">
+            <div class="form__label">{{ $t('label.description') }}</div>
+            <br>
+            {{ lbConfig.description }}
+          </div>
+          <div class="form__item">
+            <div class="form__label">{{ $t('label.lb.config.default.value') }}</div>
+            <br>
+            {{ lbConfig.defaultvalue }}
+          </div>
+          <div class="form__item" ref="lbconfigValue">
+            <div class="form__label"><span class="form__required">*</span>{{ $t('label.lb.config.value') }}</div>
+            <br>
+            <a-input v-model:value="lbConfig.value"></a-input>
+            <span class="error-text">Required</span>
+          </div>
+          <div>
+            <div class="form__label">{{ $t('label.action') }}</div>
+            <br>
+            <a-button :disabled="!('createLoadBalancerConfig' in $store.getters.apis)" shape="circle" type="primary" @click="handleAddNewLbConfig">
+              <template #icon><plus-outlined /></template>
+            </a-button>
+          </div>
+        </div>
+
+        <a-divider/>
+
+        <a-table
+          size="small"
+          class="list-view"
+          :loading="addLbConfigModalLoading"
+          :columns="lbconfigColumns"
+          :dataSource="savedLbConfigs"
+          :pagination="false"
+          :rowKey="record => record.id">
+          <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'actions'">
+              <div class="actions">
+                <a-popconfirm
+                  :title="$t('label.delete') + '?'"
+                  @confirm="handleDeleteLoadBalancerConfig(record)"
+                  :okText="$t('label.yes')"
+                  :cancelText="$t('label.no')"
+                >
+                  <tooltip-button
+                    :tooltip="$t('label.delete')"
+                    :disabled="!('deleteLoadBalancerConfig' in $store.getters.apis)"
+                    type="primary"
+                    :danger="true"
+                    icon="delete-outlined" />
+                </a-popconfirm>
+              </div>
+            </template>
+          </template>
+        </a-table>
+        <a-pagination
+          class="pagination"
+          size="small"
+          :current="page"
+          :pageSize="pageSize"
+          :total="totalCountLbConfig"
+          :showTotal="total => `Total ${total} items`"
+          :pageSizeOptions="['10', '20', '40', '80', '100']"
+          @change="handleChangePage"
+          @showSizeChange="handleChangePageSize"
+          showSizeChanger/>
+      </div>
+
+    </a-modal>
+
+    <a-modal
+      :title="$t('label.add.ssl.cert')"
+      v-if="addSslCertModalVisible"
+      :visible="addSslCertModalVisible"
+      class="vm-modal"
+      width="50vw"
+      @ok="closeModal"
+      @cancel="closeModal"
+    >
+      <div>
+        <div class="form">
+          <div class="form__item">
+            <div class="form__label">{{ $t('label.sslcertificates') }}</div>
+            <br>
+            <a-select v-model:value="selectedSsl.name" style="width: 80%;" @change="selectssl">
+              <a-select-option
+                v-for="sslcert in sslcerts.data"
+                :key="sslcert.id">{{ sslcert.name }}
+              </a-select-option>
+            </a-select>
+          </div>
+          <div v-show="showAssignedSsl" class="form__item">
+            <div class="form__label">{{ $t('label.currentsslcert') }}</div>
+            <br>
+            {{ assignedSslCert }}
+          </div>
+        </div>
+      </div>
+      <br>
+      <div>
+        <div>
+          <a-button v-show="buttonVisible" :disabled="!('deleteLoadBalancerConfig' in $store.getters.apis) || !deleteSslButtonVisible" type="danger" @click="removeSslFromLbRule()">
+            <template #icon><delete-outlined /></template>
+            Delete
+          </a-button>
+          <a-button v-show="buttonVisible" :disabled="!('deleteLoadBalancerConfig' in $store.getters.apis) || !addSslButtonVisible" type="primary" @click="addSslTolbRule()">
+            <template #icon><plus-outlined /></template>
+            Add
+          </a-button>
+        </div>
+      </div>
+
+      <template #actions="{record}">
+        <a-button
+          shape="circle"
+          type="danger"
+          icon="delete"
+          @click="() => handleDeleteInstanceFromRule(instance, record, ip)" />
+      </template>
+    </a-modal>
   </div>
 </template>
 
@@ -648,13 +814,14 @@ export default {
       showGroupActionModal: false,
       selectedItems: [],
       selectedColumns: [],
-      filterColumns: ['State', 'Action', 'Add VMs', 'Stickiness'],
+      filterColumns: ['State', 'Actions', 'Add VMs', 'Stickiness'],
       showConfirmationAction: false,
       message: {
         title: this.$t('label.action.bulk.delete.load.balancer.rules'),
         confirmMessage: this.$t('label.confirm.delete.loadbalancer.rules')
       },
       loading: true,
+      visible: true,
       lbRules: [],
       tagsModalVisible: false,
       tagsModalLoading: false,
@@ -681,6 +848,7 @@ export default {
         protocol: 'tcp',
         virtualmachineid: [],
         vmguestip: [],
+        sslcert: '',
         cidrlist: ''
       },
       addVmModalVisible: false,
@@ -691,50 +859,115 @@ export default {
       totalCount: 0,
       page: 1,
       pageSize: 10,
+      lbConfigs: [],
+      savedLbConfigs: [],
+      totalCountLbConfig: 0,
+      sslcerts: {
+        loading: false,
+        data: []
+      },
+      selectedSsl: {
+        name: '',
+        id: null
+      },
+      addSslCertModalVisible: false,
+      showAssignedSsl: false,
+      addLbConfigVisible: false,
+      addLbConfigModalLoading: false,
+      currentAccountId: null,
+      assignedSslCert: 'None',
+      buttonVisible: false,
+      deleteSslButtonVisible: true,
+      addSslButtonVisible: true,
+      lbConfig: {
+        scope: 'LoadBalancerRule',
+        name: '',
+        description: null,
+        defaultvalue: null,
+        value: null,
+        forced: 'true'
+      },
       columns: [
         {
-          title: this.$t('label.name'),
-          dataIndex: 'name'
+          key: 'name',
+          dataIndex: 'name',
+          title: this.$t('label.name')
         },
         {
-          title: this.$t('label.publicport'),
-          dataIndex: 'publicport'
+          key: 'publicport',
+          dataIndex: 'publicport',
+          title: this.$t('label.publicport')
         },
         {
-          title: this.$t('label.privateport'),
-          dataIndex: 'privateport'
+          key: 'privateport',
+          dataIndex: 'privateport',
+          title: this.$t('label.privateport')
         },
         {
-          title: this.$t('label.cidrlist'),
-          slots: { customRender: 'cidrlist' }
+          key: 'algorithm',
+          title: this.$t('label.algorithm')
         },
         {
-          title: this.$t('label.algorithm'),
-          slots: { customRender: 'algorithm' }
+          key: 'cidrlist',
+          dataIndex: 'cidrlist',
+          title: this.$t('label.cidrlist')
         },
         {
-          title: this.$t('label.protocol'),
-          slots: { customRender: 'protocol' }
+          key: 'protocol',
+          dataIndex: 'protocol',
+          title: this.$t('label.protocol')
         },
         {
-          title: this.$t('label.state'),
-          dataIndex: 'state'
+          key: 'state',
+          dataIndex: 'state',
+          title: this.$t('label.state')
         },
         {
-          title: this.$t('label.action.configure.stickiness'),
-          slots: { customRender: 'stickiness' }
+          key: 'stickiness',
+          title: this.$t('label.action.configure.stickiness')
         },
         {
-          title: this.$t('label.autoscale'),
-          slots: { customRender: 'autoscale' }
+          key: 'configuration',
+          title: this.$t('label.lb.configuration')
         },
         {
-          title: this.$t('label.add.vms'),
-          slots: { customRender: 'add' }
+          key: 'sslcert',
+          title: this.$t('label.sslcertificates')
         },
         {
-          title: this.$t('label.action'),
-          slots: { customRender: 'actions' }
+          key: 'add',
+          title: this.$t('label.add.vms')
+        },
+        {
+          key: 'autoscale',
+          dataIndex: 'autoscale',
+          title: this.$t('label.autoscale')
+        },
+        {
+          key: 'actions',
+          title: this.$t('label.actions')
+        }
+      ],
+      lbconfigColumns: [
+        {
+          key: 'name',
+          dataIndex: 'name',
+          title: this.$t('label.lb.config.name')
+        }, {
+          key: 'description',
+          dataIndex: 'description',
+          title: this.$t('label.description')
+        }, {
+          key: 'defaultvalue',
+          dataIndex: 'defaultvalue',
+          title: this.$t('label.lb.config.default.value')
+        }, {
+          key: 'value',
+          dataIndex: 'value',
+          title: this.$t('label.lb.config.value')
+        }, {
+          key: 'actions',
+          title: this.$t('label.action')
         }
       ],
       tiers: {
@@ -743,15 +976,15 @@ export default {
       },
       vmColumns: [
         {
+          key: 'name',
           title: this.$t('label.name'),
           dataIndex: 'name',
-          slots: { customRender: 'name' },
           width: 220
         },
         {
+          key: 'state',
           title: this.$t('label.state'),
-          dataIndex: 'state',
-          slots: { customRender: 'state' }
+          dataIndex: 'state'
         },
         {
           title: this.$t('label.displayname'),
@@ -766,9 +999,9 @@ export default {
           dataIndex: 'zonename'
         },
         {
+          key: 'actions',
           title: this.$t('label.select'),
-          dataIndex: 'action',
-          slots: { customRender: 'action' },
+          dataIndex: 'actions',
           width: 80
         }
       ],
@@ -857,7 +1090,7 @@ export default {
         if (this.tiers.data?.[0]?.broadcasturi === 'tf://tf') {
           this.columns.splice(8, 0, {
             title: this.$t('label.action.health.monitor'),
-            slots: { customRender: 'healthmonitor' }
+            key: 'healthmonitor'
           })
         }
       }).catch(error => {
@@ -936,6 +1169,242 @@ export default {
           this.loading = false
         })
       })
+    },
+    fetchSslCerts () {
+      this.sslcerts.loading = true
+      this.sslcerts.data = []
+      // Firt get the account id
+      api('listAccounts', {
+        name: this.resource.account,
+        domainid: this.resource.domainid
+      }).then(json => {
+        const accounts = json.listaccountsresponse.account || []
+        if (accounts.length > 0) {
+          // Now fetch all the ssl certs for this account
+          this.currentAccountId = accounts[0].id
+          api('listSslCerts', {
+            accountid: this.currentAccountId
+          }).then(json => {
+            if (json.listsslcertsresponse.sslcert && json.listsslcertsresponse.sslcert.length > 0) {
+              this.selectedSsl.name = json.listsslcertsresponse.sslcert[0].name
+              this.selectedSsl.id = json.listsslcertsresponse.sslcert[0].id
+              json.listsslcertsresponse.sslcert.forEach(entry => this.sslcerts.data.push(entry))
+            }
+          }).catch(error => {
+            this.$notifyError(error)
+          })
+        }
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+        this.sslcerts.loading = false
+      })
+      if (this.selectedRule !== null) {
+        this.getCurrentlyAssignedSslCert()
+      }
+    },
+    getCurrentlyAssignedSslCert () {
+      api('listSslCerts', {
+        accountid: this.currentAccountId,
+        lbruleid: this.selectedRule.id
+      }).then(json => {
+        if (json.listsslcertsresponse.sslcert && json.listsslcertsresponse.sslcert.length > 0) {
+          this.assignedSslCert = json.listsslcertsresponse.sslcert[0].name
+          this.deleteSslButtonVisible = true
+        } else {
+          this.assignedSslCert = 'None'
+          this.deleteSslButtonVisible = false
+        }
+      }).catch(error => {
+        this.$notifyError(error)
+      })
+    },
+    selectssl (e) {
+      this.selectedSsl.id = e
+    },
+    handleAddSslCert (data) {
+      this.addSslCert(data, this.selectedSsl.id)
+    },
+    addSslTolbRule () {
+      this.visible = false
+      this.addSslCert(this.selectedRule.id, this.selectedSsl.id)
+    },
+    addSslCert (lbRuleId, certId) {
+      this.disableSslAddDeleteButtons()
+      api('assignCertToLoadBalancer', {
+        lbruleid: lbRuleId,
+        certid: certId,
+        forced: true
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.assigncerttoloadbalancerresponse.jobid,
+          successMessage: `Successfully assigned Ssl certificate`,
+          successMethod: () => {
+            if (this.selectedRule !== null) {
+              this.getCurrentlyAssignedSslCert()
+            }
+            this.enableSslAddDeleteButtons()
+          },
+          errorMessage: 'Failed to assign ssl certificate',
+          errorMethod: () => {
+          },
+          loadingMessage: `Assigning ssl certificate...`,
+          catchMessage: 'Error encountered while fetching async job result addSslTolbRule',
+          catchMethod: (e) => {
+            this.closeModal()
+          }
+        })
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+      })
+    },
+    removeSslFromLbRule () {
+      this.disableSslAddDeleteButtons()
+      api('removeCertFromLoadBalancer', {
+        lbruleid: this.selectedRule.id
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.removecertfromloadbalancerresponse.jobid,
+          successMessage: `Successfully removed Ssl certificate`,
+          successMethod: () => {
+            this.visible = true
+            this.getCurrentlyAssignedSslCert()
+            this.enableSslAddDeleteButtons()
+          },
+          errorMessage: 'Failed to remove ssl certificate',
+          errorMethod: () => {
+            this.visible = true
+          },
+          loadingMessage: `Removing ssl certificate...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.closeModal()
+          }
+        })
+      }).catch(error => {
+        this.$notifyError(error)
+      }).finally(() => {
+      })
+    },
+    populateValues () {
+      for (let i = 0; i < this.lbConfigs.length; i++) {
+        if (this.lbConfig.name === this.lbConfigs[i].name) {
+          this.lbConfig.description = this.lbConfigs[i].description
+          this.lbConfig.defaultvalue = this.lbConfigs[i].defaultvalue
+        }
+      }
+    },
+    enableSslAddDeleteButtons () {
+      this.deleteSslButtonVisible = true
+      this.addSslButtonVisible = true
+    },
+    disableSslAddDeleteButtons () {
+      this.addSslButtonVisible = false
+      this.deleteSslButtonVisible = false
+    },
+    handleDeleteLoadBalancerConfig (rule) {
+      this.addLbConfigModalLoading = true
+      api('deleteLoadBalancerConfig', {
+        id: rule.id
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.deleteloadbalancerconfigresponse.jobid,
+          successMessage: `Successfully removed load balancer config`,
+          successMethod: () => {
+            this.fetchSavedLbConfigs()
+          },
+          errorMessage: 'Failed to remove load balancer config',
+          errorMethod: () => {
+            this.fetchSavedLbConfigs()
+          },
+          loadingMessage: `Removing load balancer config...`,
+          catchMessage: 'Error encountered while fetching async job result',
+          catchMethod: () => {
+            this.fetchSavedLbConfigs()
+          }
+        })
+      }).catch(error => {
+        this.$notifyError(error)
+        this.fetchSavedLbConfigs()
+      })
+    },
+    handleOpenAddConfiguration () {
+      api('listLoadBalancerConfigs', {
+        listAll: true,
+        scope: 'LoadBalancerRule',
+        loadbalancerid: this.selectedRule.id
+      }).then(response => {
+        this.lbConfigs = response.listloadbalancerconfigsresponse.loadbalancerconfig
+        this.addLbConfigVisible = true
+        const tempLbConfig = response.listloadbalancerconfigsresponse.loadbalancerconfig[0]
+        this.lbConfig.name = tempLbConfig.name
+        this.lbConfig.description = tempLbConfig.description
+        this.lbConfig.defaultvalue = tempLbConfig.defaultvalue
+      }).catch(error => {
+        this.$notifyError(error)
+        this.closeModal()
+      })
+      this.fetchSavedLbConfigs()
+    },
+    handleAddNewLbConfig () {
+      if (!this.lbConfig.value) {
+        this.$refs.lbconfigValue.classList.add('error')
+        return
+      } else {
+        this.$refs.lbconfigValue.classList.remove('error')
+      }
+      this.addLbConfigModalLoading = true
+      api('createLoadBalancerConfig', {
+        scope: 'LoadBalancerRule',
+        name: this.lbConfig.name,
+        value: this.lbConfig.value,
+        forced: 'true',
+        loadbalancerid: this.selectedRule.id
+      }).then(response => {
+        this.$pollJob({
+          jobId: response.createloadbalancerconfigresponse.jobid,
+          successMessage: this.$t('message.success.create.lbconfig'),
+          successMethod: () => {
+            this.fetchSavedLbConfigs()
+          },
+          errorMessage: this.$t('message.failed.to.remove.lbconfig'),
+          errorMethod: () => {
+            this.fetchSavedLbConfigs()
+          },
+          loadingMessage: this.$t('message.add.lbconfig.processing'),
+          catchMessage: this.$t('error.fetching.async.job.result'),
+          catchMethod: () => {
+            this.fetchSavedLbConfigs()
+          }
+        })
+        this.addLbConfigModalLoading = true
+      }).catch(error => {
+        this.$notifyError(error)
+        this.fetchSavedLbConfigs()
+      })
+      this.lbConfig.value = null
+    },
+    fetchSavedLbConfigs () {
+      api('listLoadBalancerConfigs', {
+        scope: 'LoadBalancerRule',
+        loadbalancerid: this.selectedRule.id
+      }).then(response => {
+        this.savedLbConfigs = response.listloadbalancerconfigsresponse.loadbalancerconfig
+        this.totalCountLbConfig = response.listloadbalancerconfigsresponse.count || 0
+      }).catch(error => {
+        this.$notifyError(error)
+        this.loading = false
+      })
+      this.addLbConfigModalLoading = false
+    },
+    handleOpenAddSslCertModal () {
+      this.addSslCertModalVisible = true
+      if (this.selectedRule) {
+        this.showAssignedSsl = true
+        this.buttonVisible = true
+      }
+      this.fetchSslCerts()
     },
     returnAlgorithmName (name) {
       switch (name) {
@@ -1311,9 +1780,9 @@ export default {
     deleteRules (e) {
       this.showConfirmationAction = false
       this.selectedColumns.splice(0, 0, {
+        key: 'status',
         dataIndex: 'status',
         title: this.$t('label.operation.status'),
-        slots: { customRender: 'status' },
         filters: [
           { text: 'In Progress', value: 'InProgress' },
           { text: 'Success', value: 'success' },
@@ -1503,6 +1972,9 @@ export default {
           successMessage: this.$t('message.success.assign.vm'),
           successMethod: () => {
             this.parentToggleLoading()
+            if (this.selectedSsl.id !== null) {
+              this.handleAddSslCert(data)
+            }
             this.fetchData()
             this.closeModal()
           },
@@ -1553,8 +2025,6 @@ export default {
         this.$notifyError(error)
         this.loading = false
       })
-
-      // assigntoloadbalancerruleresponse.jobid
     },
     closeModal () {
       this.selectedRule = null
@@ -1572,10 +2042,14 @@ export default {
       this.nics = []
       this.addVmModalVisible = false
       this.newRule.virtualmachineid = []
+      this.addLbConfigVisible = false
+      this.addSslCertModalVisible = false
+      this.showAssignedSsl = false
+      this.buttonVisible = false
+      this.savedLbConfigs = []
     },
     handleChangePage (page, pageSize) {
       this.page = page
-      this.pageSize = pageSize
       this.fetchData()
     },
     handleChangePageSize (currentPage, pageSize) {

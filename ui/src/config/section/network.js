@@ -30,6 +30,7 @@ export default {
       name: 'guestnetwork',
       title: 'label.guest.networks',
       icon: 'apartment-outlined',
+      docHelp: 'adminguide/networking_and_traffic.html#adding-an-additional-guest-network',
       permission: ['listNetworks'],
       resourceType: 'Network',
       columns: () => {
@@ -64,6 +65,10 @@ export default {
         name: 'ip.v6.firewall',
         component: shallowRef(defineAsyncComponent(() => import('@/views/network/Ipv6FirewallRulesTab.vue'))),
         show: (record, route, user) => { return record.type === 'Isolated' && ['IPv6', 'DualStack'].includes(record.internetprotocol) && !('vpcid' in record) && 'listIpv6FirewallRules' in store.getters.apis && (['Admin', 'DomainAdmin'].includes(user.roletype) || record.account === user.account || record.projectid) }
+      }, {
+        name: 'lb.config',
+        component: shallowRef(defineAsyncComponent(() => import('@/views/network/LbConfigTab.vue'))),
+        show: (record) => { return record.type === 'Isolated' && !('vpcid' in record) && 'listEgressFirewallRules' in store.getters.apis }
       }, {
         name: 'public.ip.addresses',
         component: shallowRef(defineAsyncComponent(() => import('@/views/network/IpAddressesTab.vue'))),
@@ -655,9 +660,8 @@ export default {
     {
       name: 'vpnuser',
       title: 'label.vpn.users',
-      icon: 'user-alt-outlined',
+      icon: 'user-switch-outlined',
       permission: ['listVpnUsers'],
-      hidden: true,
       columns: ['username', 'state', 'account', 'domain'],
       details: ['username', 'state', 'account', 'domain'],
       actions: [
@@ -906,6 +910,7 @@ export default {
       name: 'guestvlans',
       title: 'label.guest.vlan',
       icon: 'folder-outlined',
+      docHelp: 'conceptsandterminology/network_setup.html#vlan-allocation-example',
       permission: ['listGuestVlans'],
       resourceType: 'GuestVlan',
       filters: ['allocatedonly', 'all'],

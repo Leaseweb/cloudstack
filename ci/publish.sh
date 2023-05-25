@@ -66,4 +66,3 @@ do
     echo "publishing $file"
     publish $file
 done
-
