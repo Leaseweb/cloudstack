@@ -27,16 +27,14 @@ import org.apache.cloudstack.api.response.FirewallRuleResponse;
 import org.apache.cloudstack.api.response.LoadBalancerConfigResponse;
 import org.apache.cloudstack.api.response.NetworkResponse;
 import org.apache.cloudstack.api.response.VpcResponse;
+import org.apache.cloudstack.framework.config.ConfigKey;
 import org.apache.cloudstack.network.lb.LoadBalancerConfig;
-import org.apache.cloudstack.network.lb.LoadBalancerConfig.Scope;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 
 import com.cloud.event.EventTypes;
 import com.cloud.exception.InvalidParameterValueException;
 import com.cloud.network.Network;
-import com.cloud.network.rules.LoadBalancer;
-import com.cloud.network.vpc.Vpc;
 
 @APICommand(name = "createLoadBalancerConfig", description = "Creates a load balancer config",
         responseObject = LoadBalancerConfigResponse.class,
@@ -174,12 +172,8 @@ public class CreateLoadBalancerConfigCmd extends BaseAsyncCreateCmd {
 
     @Override
     public long getEntityOwnerId() {
-        if (Scope.Network.name().equalsIgnoreCase(scope) && networkId != null) {
+        if (ConfigKey.Scope.Network.name().equalsIgnoreCase(scope) && networkId != null) {
             return LoadBalancerHelper.getEntityOwnerId(_entityMgr, Network.class, networkId);
-        } else if (Scope.Vpc.name().equalsIgnoreCase(scope) && vpcId != null) {
-            return LoadBalancerHelper.getEntityOwnerId(_entityMgr, Vpc.class, vpcId);
-        } else if (Scope.LoadBalancerRule.name().equalsIgnoreCase(scope) && loadBalancerId != null) {
-            return LoadBalancerHelper.getEntityOwnerId(_entityMgr, LoadBalancer.class, loadBalancerId);
         }
         throw new InvalidParameterValueException("Unable to find the entity owner");
     }

@@ -22,13 +22,14 @@ import java.util.List;
 
 import org.apache.cloudstack.api.Identity;
 import org.apache.cloudstack.api.InternalIdentity;
+import org.apache.cloudstack.framework.config.ConfigKey;
 
 public interface LoadBalancerConfig extends Identity, InternalIdentity {
 
-    public enum SSLConfiguration {
+    enum SSLConfiguration {
         NONE("none"), OLD("old"), INTERMEDIATE("intermediate");
 
-        String _config;
+        final String _config;
 
         SSLConfiguration(String config) {
             _config = config;
@@ -49,7 +50,7 @@ public interface LoadBalancerConfig extends Identity, InternalIdentity {
         }
 
         public static List<String> getValues() {
-            ArrayList values = new ArrayList<String>();
+            ArrayList<String> values = new ArrayList<>();
             for (SSLConfiguration config : SSLConfiguration.values()) {
                 values.add(config.toString());
             }
@@ -57,11 +58,11 @@ public interface LoadBalancerConfig extends Identity, InternalIdentity {
         }
     }
 
-    public enum Scope {
+    enum Scope {
         Network, Vpc, LoadBalancerRule;
     }
 
-    Scope getScope();
+    ConfigKey.Scope getScope();
 
     Long getNetworkId();
 

@@ -19,13 +19,14 @@ package com.cloud.network.dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.cloudstack.network.lb.LoadBalancerConfig.Scope;
+import org.apache.cloudstack.framework.config.ConfigKey;
 
 import com.cloud.utils.db.GenericDaoBase;
 import com.cloud.utils.db.SearchBuilder;
 import com.cloud.utils.db.SearchCriteria;
 import com.cloud.utils.db.SearchCriteria.Op;
 import com.cloud.utils.db.TransactionLegacy;
+import org.apache.cloudstack.network.lb.LoadBalancerConfig;
 
 public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfigVO, Long> implements LoadBalancerConfigDao {
 
@@ -48,7 +49,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
     @Override
     public List<LoadBalancerConfigVO> listByNetworkId(Long networkId) {
         SearchCriteria<LoadBalancerConfigVO> sc = AllFieldsSearch.create();
-        sc.setParameters("scope", Scope.Network);
+        sc.setParameters("scope", ConfigKey.Scope.Network);
         sc.setParameters("networkId", networkId);
         return listBy(sc);
     }
@@ -56,7 +57,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
     @Override
     public List<LoadBalancerConfigVO> listByVpcId(Long vpcId) {
         SearchCriteria<LoadBalancerConfigVO> sc = AllFieldsSearch.create();
-        sc.setParameters("scope", Scope.Vpc);
+        sc.setParameters("scope", LoadBalancerConfig.Scope.Vpc);
         sc.setParameters("vpcId", vpcId);
         return listBy(sc);
     }
@@ -64,7 +65,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
     @Override
     public List<LoadBalancerConfigVO> listByLoadBalancerId(Long loadBalancerId) {
         SearchCriteria<LoadBalancerConfigVO> sc = AllFieldsSearch.create();
-        sc.setParameters("scope", Scope.LoadBalancerRule);
+        sc.setParameters("scope", LoadBalancerConfig.Scope.LoadBalancerRule);
         sc.setParameters("loadBalancerId", loadBalancerId);
         return listBy(sc);
     }
@@ -72,7 +73,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
     @Override
     public void removeByNetworkId(Long networkId) {
         SearchCriteria<LoadBalancerConfigVO> sc = AllFieldsSearch.create();
-        sc.setParameters("scope", Scope.Network);
+        sc.setParameters("scope", ConfigKey.Scope.Network);
         sc.setParameters("networkId", networkId);
         remove(sc);
     }
@@ -80,7 +81,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
     @Override
     public void removeByVpcId(Long vpcId) {
         SearchCriteria<LoadBalancerConfigVO> sc = AllFieldsSearch.create();
-        sc.setParameters("scope", Scope.Vpc);
+        sc.setParameters("scope", LoadBalancerConfig.Scope.Vpc);
         sc.setParameters("vpcId", vpcId);
         remove(sc);
     }
@@ -88,13 +89,13 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
     @Override
     public void removeByLoadBalancerId(Long loadBalancerId) {
         SearchCriteria<LoadBalancerConfigVO> sc = AllFieldsSearch.create();
-        sc.setParameters("scope", Scope.LoadBalancerRule);
+        sc.setParameters("scope", LoadBalancerConfig.Scope.LoadBalancerRule);
         sc.setParameters("loadBalancerId", loadBalancerId);
         remove(sc);
     }
 
     @Override
-    public LoadBalancerConfigVO findConfig(Scope scope, Long networkId, Long vpcId, Long loadBalancerId, String name) {
+    public LoadBalancerConfigVO findConfig(ConfigKey.Scope scope, Long networkId, Long vpcId, Long loadBalancerId, String name) {
         SearchCriteria<LoadBalancerConfigVO> sc = AllFieldsSearch.create();
         sc.setParametersIfNotNull("scope", scope);
         sc.setParametersIfNotNull("networkId", networkId);
@@ -119,7 +120,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
     @Override
     public List<LoadBalancerConfigVO> saveConfigs(List<LoadBalancerConfigVO> configs) {
         if (configs.isEmpty()) {
-            return new ArrayList<LoadBalancerConfigVO>();
+            return new ArrayList<>();
         }
         TransactionLegacy txn = TransactionLegacy.currentTxn();
         txn.start();
@@ -139,7 +140,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
         }
         expunge(sc);
 
-        List<Long> ids = new ArrayList<Long>();
+        List<Long> ids = new ArrayList<>();
         for (LoadBalancerConfigVO config : configs) {
             config = persist(config);
             ids.add(config.getId());
@@ -147,7 +148,7 @@ public class LoadBalancerConfigDaoImpl extends GenericDaoBase<LoadBalancerConfig
         txn.commit();
 
         SearchCriteria<LoadBalancerConfigVO> sc2 = AllFieldsSearch.create();
-        sc2.setParameters("ids", ids.toArray(new Object[ids.size()]));
+        sc2.setParameters("ids", ids.toArray());
         return listBy(sc2);
     }
 }

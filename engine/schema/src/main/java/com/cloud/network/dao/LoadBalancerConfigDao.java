@@ -16,11 +16,10 @@
 // under the License.
 package com.cloud.network.dao;
 
-import java.util.List;
-
 import com.cloud.utils.db.GenericDao;
+import org.apache.cloudstack.framework.config.ConfigKey;
 
-import org.apache.cloudstack.network.lb.LoadBalancerConfig.Scope;
+import java.util.List;
 
 public interface LoadBalancerConfigDao extends GenericDao<LoadBalancerConfigVO, Long> {
 
@@ -36,7 +35,7 @@ public interface LoadBalancerConfigDao extends GenericDao<LoadBalancerConfigVO, 
 
     void removeByLoadBalancerId(Long loadBalancerId);
 
-    LoadBalancerConfigVO findConfig(Scope scope, Long networkId, Long vpcId, Long loadBalancerId, String name);
+    LoadBalancerConfigVO findConfig(ConfigKey.Scope scope, Long networkId, Long vpcId, Long loadBalancerId, String name);
 
     void addConfig(LoadBalancerConfigVO config);
 

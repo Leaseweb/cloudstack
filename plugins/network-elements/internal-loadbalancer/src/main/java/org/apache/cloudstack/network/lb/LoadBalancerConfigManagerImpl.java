@@ -36,7 +36,6 @@ import com.cloud.network.dao.NetworkServiceMapDao;
 import com.cloud.network.dao.NetworkVO;
 import com.cloud.network.lb.LoadBalancingRulesManager;
 import com.cloud.network.rules.LoadBalancerContainer.Scheme;
-import com.cloud.network.vpc.VpcVO;
 import com.cloud.network.vpc.dao.VpcDao;
 import com.cloud.user.Account;
 import com.cloud.user.AccountManager;
@@ -52,7 +51,6 @@ import org.apache.cloudstack.api.command.user.loadbalancer.ReplaceLoadBalancerCo
 import org.apache.cloudstack.api.command.user.loadbalancer.UpdateLoadBalancerConfigCmd;
 import org.apache.cloudstack.context.CallContext;
 import org.apache.cloudstack.framework.config.ConfigKey;
-import org.apache.cloudstack.network.lb.LoadBalancerConfig.Scope;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.log4j.Logger;
 
@@ -88,7 +86,7 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
         }
 
         //validate parameters
-        Scope scope = null;
+        ConfigKey.Scope scope = null;
         if (scopeStr != null) {
             scope = LoadBalancerConfigKey.getScopeFromString(scopeStr);
             if (scope == null) {
@@ -105,10 +103,8 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
             checkPermission(config);
         }
 
-        if (cmd.listAll()) {
-            if (id != null || name != null) {
-                throw new InvalidParameterValueException("id and name must be null if listall is true");
-            }
+        if (cmd.listAll() && (id != null || name != null)) {
+            throw new InvalidParameterValueException("id and name must be null if listall is true");
         }
 
         SearchCriteria<LoadBalancerConfigVO> sc = _lbConfigDao.createSearchCriteria();
@@ -136,11 +132,11 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
         }
         if (cmd.listAll()) {
             LOGGER.debug("Adding config keys for scope " + scope);
-            Map<String, LoadBalancerConfigVO> configsMap = new LinkedHashMap<String, LoadBalancerConfigVO>();
+            Map<String, LoadBalancerConfigVO> configsMap = new LinkedHashMap<>();
             for (LoadBalancerConfigVO config : configs) {
                 configsMap.put(config.getName(), config);
             }
-            List<LoadBalancerConfigVO> result = new ArrayList<LoadBalancerConfigVO>();
+            List<LoadBalancerConfigVO> result = new ArrayList<>();
             Map<String, LoadBalancerConfigKey> configKeys = LoadBalancerConfigKey.getConfigsByScope(scope);
             for (LoadBalancerConfigKey configKey : configKeys.values()) {
                 if (configsMap.get(configKey.key()) != null) {
@@ -165,10 +161,11 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
         String value = cmd.getValue();
 
         //validate parameters
-        Scope scope = LoadBalancerConfigKey.getScopeFromString(scopeStr);
+        ConfigKey.Scope scope = LoadBalancerConfigKey.getScopeFromString(scopeStr);
         if (scope == null) {
             throw new InvalidParameterValueException("Invalid scope " + scopeStr);
         }
+
         LoadBalancerConfigKey configKey = validateParameters(scope, name, value);
 
         checkPermission(scope, networkId, vpcId, loadBalancerId);
@@ -237,11 +234,12 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
         }
 
         //validate parameters
-        Scope scope = LoadBalancerConfigKey.getScopeFromString(scopeStr);
+        ConfigKey.Scope scope = LoadBalancerConfigKey.getScopeFromString(scopeStr);
         if (scope == null) {
             throw new InvalidParameterValueException("Invalid scope " + scopeStr);
         }
-        List<LoadBalancerConfigVO> configs = new ArrayList<LoadBalancerConfigVO>();
+        List<LoadBalancerConfigVO> configs = new ArrayList<>();
+
         for (String name : configList.keySet()) {
             String value = configList.get(name);
             LoadBalancerConfigKey configKey = validateParameters(scope, name, value);
@@ -257,11 +255,12 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
         return configs;
     }
 
-    private LoadBalancerConfigKey validateParameters(Scope scope, String name, String value) {
+    private LoadBalancerConfigKey validateParameters(ConfigKey.Scope scope, String name, String value) {
         Pair<LoadBalancerConfigKey, String> res = LoadBalancerConfigKey.validate(scope, name, value);
         if (res.second() != null) {
             throw new InvalidParameterValueException(res.second());
         }
+
         return res.first();
     }
 
@@ -269,13 +268,13 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
         checkPermission(config.getScope(), config.getNetworkId(), config.getVpcId(), config.getLoadBalancerId());
     }
 
-    private void checkPermission(Scope scope, Long networkId, Long vpcId, Long loadBalancerId) {
+    private void checkPermission(ConfigKey.Scope scope, Long networkId, Long vpcId, Long loadBalancerId) {
         checkPermission(scope, networkId, vpcId, loadBalancerId, false);
     }
 
-    private void checkPermission(Scope scope, Long networkId, Long vpcId, Long loadBalancerId, Boolean listAll) {
+    private void checkPermission(ConfigKey.Scope scope, Long networkId, Long vpcId, Long loadBalancerId, Boolean listAll) {
         Account caller = CallContext.current().getCallingAccount();
-        if (scope == Scope.Network) {
+        if (scope == ConfigKey.Scope.Network) {
             if (networkId == null) {
                 if (listAll) {
                     return;
@@ -293,40 +292,6 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
             _accountMgr.checkAccess(caller, null, true, network);
             if (network.getVpcId() != null) {
                 throw new InvalidParameterValueException("network " + network.getName() + " is a VPC tier, please add LB configs to VPC instead");
-            }
-        } else if (scope == Scope.Vpc) {
-            if (vpcId == null) {
-                if (listAll) {
-                    return;
-                }
-                throw new InvalidParameterValueException("vpcId is required");
-            }
-            if (networkId != null || loadBalancerId != null) {
-                throw new InvalidParameterValueException("networkId and loadBalancerId should be null if scope is Vpc");
-            }
-            VpcVO vpc = _vpcDao.findById(vpcId);
-            if (vpc == null) {
-                throw new InvalidParameterValueException("Cannot find vpc by id " + vpcId);
-            }
-            // Perform permission check
-            _accountMgr.checkAccess(caller, null, true, vpc);
-        } else if (scope == Scope.LoadBalancerRule) {
-            if (loadBalancerId == null) {
-                if (listAll) {
-                    return;
-                }
-                throw new InvalidParameterValueException("loadBalancerId is required");
-            }
-            if (networkId != null || vpcId != null) {
-                throw new InvalidParameterValueException("networkId and vpcId should be null if scope is LoadBalancerRule");
-            }
-            LoadBalancerVO rule = _lbDao.findById(loadBalancerId);
-            if (rule == null) {
-                throw new InvalidParameterValueException("Cannot find load balancer rule by id " + loadBalancerId);
-            }
-            if (networkId != null) {
-                // Perform permission check
-                checkPermission(Scope.Network, rule.getNetworkId(), null, null);
             }
         }
     }

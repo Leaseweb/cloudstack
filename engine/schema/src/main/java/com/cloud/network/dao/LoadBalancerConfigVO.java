@@ -28,6 +28,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.cloudstack.api.InternalIdentity;
+import org.apache.cloudstack.framework.config.ConfigKey;
 import org.apache.cloudstack.network.lb.LoadBalancerConfig;
 import org.apache.cloudstack.network.lb.LoadBalancerConfigKey;
 
@@ -43,7 +44,7 @@ public class LoadBalancerConfigVO implements InternalIdentity, LoadBalancerConfi
     private String uuid;
 
     @Column(name = "scope")
-    private Scope scope;
+    private ConfigKey.Scope scope;
 
     @Column(name = "network_id")
     private Long networkId;
@@ -76,7 +77,7 @@ public class LoadBalancerConfigVO implements InternalIdentity, LoadBalancerConfi
         this.uuid = UUID.randomUUID().toString();
     }
 
-    public LoadBalancerConfigVO(Scope scope, Long networkId, Long vpcId, Long loadBalancerId, String name, String value) {
+    public LoadBalancerConfigVO(ConfigKey.Scope scope, Long networkId, Long vpcId, Long loadBalancerId, String name, String value) {
         this.scope = scope;
         this.networkId = networkId;
         this.vpcId = vpcId;
@@ -86,7 +87,7 @@ public class LoadBalancerConfigVO implements InternalIdentity, LoadBalancerConfi
         this.uuid = UUID.randomUUID().toString();
     }
 
-    public LoadBalancerConfigVO(Scope scope, Long networkId, Long vpcId, Long loadBalancerId, LoadBalancerConfigKey config, String value) {
+    public LoadBalancerConfigVO(ConfigKey.Scope scope, Long networkId, Long vpcId, Long loadBalancerId, LoadBalancerConfigKey config, String value) {
         this.scope = scope;
         this.networkId = networkId;
         this.vpcId = vpcId;
@@ -112,7 +113,7 @@ public class LoadBalancerConfigVO implements InternalIdentity, LoadBalancerConfi
     }
 
     @Override
-    public Scope getScope() {
+    public ConfigKey.Scope getScope() {
         return scope;
     }
 

@@ -598,7 +598,7 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
          * It's mostly for buffer, since each time CheckRouterTask running, it
          * would add all the redundant networks in the queue immediately
          */
-        _vrUpdateQueue = new LinkedBlockingQueue<Long>(_rvrStatusUpdatePoolSize * 1000);
+        _vrUpdateQueue = new LinkedBlockingQueue<>(_rvrStatusUpdatePoolSize * 1000);
 
         _rvrStatusUpdateExecutor = Executors.newFixedThreadPool(_rvrStatusUpdatePoolSize, new NamedThreadFactory("RedundantRouterStatusMonitor"));
 
@@ -1731,7 +1731,7 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
 
     private String getStickinessPolicies(long loadBalancingRuleId) {
         List<LBStickinessPolicyVO> stickinessPolicyVOs = lbStickinessPolicyDao.listByLoadBalancerId(loadBalancingRuleId, false);
-        if (stickinessPolicyVOs != null && stickinessPolicyVOs.size() > 0) {
+        if (stickinessPolicyVOs != null && !stickinessPolicyVOs.isEmpty()) {
             StringBuilder stickiness = new StringBuilder();
             for (LBStickinessPolicyVO stickinessVO : stickinessPolicyVOs) {
                 stickiness.append(stickinessVO.getMethodName()).append(" ");
@@ -1756,7 +1756,7 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
         } else {
             networkLbConfigs = _lbConfigDao.listByNetworkId(routerJoinVO.getNetworkId());
         }
-        HashMap<String, String> networkLbConfigsMap = new HashMap<String, String>();
+        HashMap<String, String> networkLbConfigsMap = new HashMap<>();
         if (networkLbConfigs != null) {
             for (LoadBalancerConfig networkLbConfig: networkLbConfigs) {
                 networkLbConfigsMap.put(networkLbConfig.getName(), networkLbConfig.getValue());
@@ -1769,7 +1769,7 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
 
         final NetworkOffering offering = _networkOfferingDao.findById(_networkDao.findById(routerJoinVO.getNetworkId()).getNetworkOfferingId());
         List<? extends FirewallRuleVO> loadBalancerVOs = this.getLBRules(routerJoinVO);
-        if (loadBalancerVOs.size() > 0) {
+        if (!loadBalancerVOs.isEmpty()) {
             String globalMaxConnFinal;
             if (globalMaxConn != null) {
                 globalMaxConnFinal = globalMaxConn;
@@ -1780,8 +1780,7 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
             }
             loadBalancingData.append("global.maxconn=").append(globalMaxConnFinal);
             String globalMaxPipesFinal;
-            globalMaxPipesFinal = Objects.requireNonNullElseGet(globalMaxPipes,
-                    () -> Long.toString(Long.parseLong(globalMaxConnFinal) / 4));
+            globalMaxPipesFinal = Objects.requireNonNullElseGet(globalMaxPipes, () -> Long.toString(Long.parseLong(globalMaxConnFinal) / 4));
             loadBalancingData.append(",global.maxpipes=").append(globalMaxPipesFinal);
             lbConfig = Optional.ofNullable(networkLbConfigsMap.get(LoadBalancerConfigKey.LbTimeoutConnect.key()));
             loadBalancingData.append(",default.timeout.connect=").append(lbConfig.orElse(LoadBalancerConfigKey.LbTimeoutConnect.defaultValue()));
@@ -1793,7 +1792,7 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
         }
         for (FirewallRuleVO firewallRuleVO : loadBalancerVOs) {
             List<? extends LoadBalancerConfig> lbConfigs = _lbConfigDao.listByLoadBalancerId(firewallRuleVO.getId());
-            final HashMap<String, String> lbConfigsMap = new HashMap<String, String>();
+            final HashMap<String, String> lbConfigsMap = new HashMap<>();
             if (lbConfigs != null) {
                 for (LoadBalancerConfig config: lbConfigs) {
                     lbConfigsMap.put(config.getName(), config.getValue());
@@ -1806,7 +1805,7 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
             lbConfig = Optional.ofNullable(lbConfigsMap.get(LoadBalancerConfigKey.LbHttpKeepalive.key()));
             String isHttpKeepalive = lbConfig.orElse(null);
             List<LoadBalancerVMMapVO> vmMapVOs = _loadBalancerVMMapDao.listByLoadBalancerId(firewallRuleVO.getId(), false);
-            if (vmMapVOs.size() > 0) {
+            if (!vmMapVOs.isEmpty()) {
                 loadBalancingData.append("sourcePortStart=").append(firewallRuleVO.getSourcePortStart())
                         .append(",sourcePortEnd=").append(firewallRuleVO.getSourcePortEnd());
                 if (firewallRuleVO instanceof LoadBalancerVO) {
