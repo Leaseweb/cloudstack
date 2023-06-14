@@ -2265,7 +2265,7 @@ public class ManagementServerImpl extends ManagerBase implements ManagementServe
 
         if (scope != null && !scope.isEmpty()) {
             // Populate values corresponding the resource id
-            final List<ConfigurationVO> configVOList = new ArrayList<ConfigurationVO>();
+            final List<ConfigurationVO> configVOList = new ArrayList<>();
             for (final ConfigurationVO param : result.first()) {
                 final ConfigurationVO configVo = _configDao.findByName(param.getName());
                 if (configVo != null) {
@@ -2287,10 +2287,10 @@ public class ManagementServerImpl extends ManagerBase implements ManagementServe
                 }
             }
 
-            return new Pair<List<? extends Configuration>, Integer>(configVOList, configVOList.size());
+            return new Pair<>(configVOList, configVOList.size());
         }
 
-        return new Pair<List<? extends Configuration>, Integer>(result.first(), result.second());
+        return new Pair<>(result.first(), result.second());
     }
 
     @Override

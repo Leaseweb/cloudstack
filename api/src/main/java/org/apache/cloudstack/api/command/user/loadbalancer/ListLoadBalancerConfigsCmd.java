@@ -16,7 +16,6 @@
 // under the License.
 package org.apache.cloudstack.api.command.user.loadbalancer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cloudstack.acl.RoleType;
@@ -131,8 +130,8 @@ public class ListLoadBalancerConfigsCmd extends BaseListCmd {
     @Override
     public void execute() {
         List<? extends LoadBalancerConfig> configs = _lbConfigService.searchForLoadBalancerConfigs(this);
-        ListResponse<LoadBalancerConfigResponse> response = new ListResponse<LoadBalancerConfigResponse>();
-        List<LoadBalancerConfigResponse> lbConfigResponses = new ArrayList<LoadBalancerConfigResponse>();
+        ListResponse<LoadBalancerConfigResponse> response = new ListResponse<>();
+        List<LoadBalancerConfigResponse> lbConfigResponses;
         if (configs != null) {
             lbConfigResponses = _responseGenerator.createLoadBalancerConfigResponse(configs);
             response.setResponses(lbConfigResponses);
@@ -140,5 +139,4 @@ public class ListLoadBalancerConfigsCmd extends BaseListCmd {
         response.setResponseName(getCommandName());
         this.setResponseObject(response);
     }
-
 }

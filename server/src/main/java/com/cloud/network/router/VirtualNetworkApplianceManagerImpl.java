@@ -3455,13 +3455,32 @@ Configurable, StateListener<VirtualMachine.State, VirtualMachine.Event, VirtualM
                 RouterHealthChecksMaxMemoryUsageThreshold,
                 ExposeDnsAndBootpServer,
                 RouterLogrotateFrequency,
-                NetworkVirtualRouterServiceOffering
+                NetworkVirtualRouterServiceOffering,
+                HaProxyStatsEnable,
+                HaProxyStatsUri,
+                HaProxyStatsAuth,
+                HaProxyGlobalStatsSocket,
+                HaProxyTimeoutConnect,
+                HaProxyTimeoutServer,
+                HaProxyTimeoutClient,
+                HaProxyHttp,
+                HaProxyHttp2,
+                HaProxyHttpKeepalive,
+                HaProxyBackendHttps,
+                HaProxyTransparent,
+                HaProxyGlobalMaxConn,
+                HaProxyGlobalMaxPipes,
+                HaProxyMaxConn,
+                HaProxyFullConn,
+                HaProxyServerMaxConn,
+                HaProxyServerMinConn,
+                HaProxyServerMaxQueue,
+                HaProxySslConfiguration
         };
     }
 
     @Override
-    public boolean preStateTransitionEvent(final VirtualMachine.State oldState, final VirtualMachine.Event event, final VirtualMachine.State newState, final VirtualMachine vo, final boolean status,
-            final Object opaque) {
+    public boolean preStateTransitionEvent(final VirtualMachine.State oldState, final VirtualMachine.Event event, final VirtualMachine.State newState, final VirtualMachine vo, final boolean status, final Object opaque) {
         return true;
     }
 

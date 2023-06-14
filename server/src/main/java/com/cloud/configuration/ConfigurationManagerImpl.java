@@ -1011,11 +1011,11 @@ public class ConfigurationManagerImpl extends ManagerBase implements Configurati
             configScope = config.getScope();
         }
 
-        String scope = "";
+        String scope;
         Map<String, Long> scopeMap = new LinkedHashMap<>();
 
-        Long id = null;
-        int paramCountCheck = 0;
+        Long id;
+        int paramCountCheck;
 
         scopeMap.put(ConfigKey.Scope.Zone.toString(), zoneId);
         scopeMap.put(ConfigKey.Scope.Cluster.toString(), clusterId);
@@ -1038,7 +1038,7 @@ public class ConfigurationManagerImpl extends ManagerBase implements Configurati
             throw new InvalidParameterValueException("Invalid scope id provided for the parameter " + name);
         }
 
-        String newValue = null;
+        String newValue;
         switch (ConfigKey.Scope.valueOf(scope)) {
             case Zone:
                 final DataCenterVO zone = _zoneDao.findById(id);
@@ -1126,7 +1126,7 @@ public class ConfigurationManagerImpl extends ManagerBase implements Configurati
                     _networkDetailsDao.remove(networkDetailVO.getId());
                 }
 
-                optionalValue = Optional.ofNullable(configKey.valueIn(id));
+                optionalValue = Optional.ofNullable(configKey != null ? configKey.valueIn(id) : config.getValue());
                 newValue = optionalValue.isPresent() ? optionalValue.get().toString() : defaultValue;
                 break;
 
@@ -1140,7 +1140,7 @@ public class ConfigurationManagerImpl extends ManagerBase implements Configurati
         }
 
         CallContext.current().setEventDetails(" Name: " + name + " New Value: " + (name.toLowerCase().contains("password") ? "*****" : defaultValue == null ? "" : defaultValue));
-        return new Pair<Configuration, String>(_configDao.findByName(name), newValue);
+        return new Pair<>(_configDao.findByName(name), newValue);
     }
 
     private String validateConfigurationValue(final String name, String value, final String scope) {

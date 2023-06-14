@@ -917,7 +917,7 @@ public class HAProxyConfigurator implements LoadBalancerConfigurator {
 
     @Override
     public SslCertEntry[] generateSslCertEntries(LoadBalancerConfigCommand lbCmd) {
-        final Set<SslCertEntry> sslCertEntries = new HashSet<SslCertEntry>();
+        final Set<SslCertEntry> sslCertEntries = new HashSet<>();
         for (final LoadBalancerTO lbTO : lbCmd.getLoadBalancers()) {
             if (lbTO.getSslCert() != null) {
                 final LbSslCert cert = lbTO.getSslCert();
@@ -933,7 +933,6 @@ public class HAProxyConfigurator implements LoadBalancerConfigurator {
                 sslCertEntries.add(sslCertEntry);
             }
         }
-        final SslCertEntry[] result = sslCertEntries.toArray(new SslCertEntry[sslCertEntries.size()]);
-        return result;
+        return sslCertEntries.toArray(new SslCertEntry[sslCertEntries.size()]);
     }
 }

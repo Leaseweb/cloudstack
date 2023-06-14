@@ -353,7 +353,6 @@ public class LoadBalancerConfigManagerImpl extends ManagerBase implements LoadBa
 
     @Override
     public ConfigKey<?>[] getConfigKeys() {
-        return new ConfigKey[]{ DefaultLbSSLConfiguration };
+        return new ConfigKey[] { DefaultLbSSLConfiguration };
     }
-
 }

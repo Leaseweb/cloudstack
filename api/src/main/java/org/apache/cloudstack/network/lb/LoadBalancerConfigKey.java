@@ -43,11 +43,11 @@ public enum LoadBalancerConfigKey {
 
     LbTimeoutClient(Category.General, "lb.timeout.client", "Maximum inactivity time (in ms) on client side", Long.class, "50000", "Set the maximum inactivity time on the client side.", ConfigKey.Scope.Network),
 
-    LbHttp(Category.LoadBalancer, "lb.http", "LB http enabled/disabled", Boolean.class, "true for port 80; false for other ports", "If LB is http, default is 'true' for port 80 and 'false' for others'", ConfigKey.Scope.Network),
+    LbHttp(Category.LoadBalancer, "lb.http", "LB http enabled/disabled", Boolean.class, "true", "If LB is http, default is 'true' for port 80 and 'false' for others'", ConfigKey.Scope.Network),
 
     LbHttp2(Category.LoadBalancer, "lb.http2", "Enable/disable HTTP2 support", Boolean.class, "false", "Enable or disable HTTP2 support in HAproxy", ConfigKey.Scope.Network),
 
-    LbHttpKeepalive(Category.LoadBalancer, "lb.http.keepalive", "LB http keepalive enabled/disabled", Boolean.class, "<Inherited from network offering>", "Enable or disable HTTP keep-alive, default is inherited from network offering", ConfigKey.Scope.Network),
+    LbHttpKeepalive(Category.LoadBalancer, "lb.http.keepalive", "LB http keepalive enabled/disabled", Boolean.class, "true", "Enable or disable HTTP keep-alive, default is inherited from network offering", ConfigKey.Scope.Network),
 
     LbBackendHttps(Category.LoadBalancer, "lb.backend.https", "If backend server is https", Boolean.class, "false", "If backend server is https. If yes, use 'check ssl verify none' instead of 'check'", ConfigKey.Scope.Network),
 
@@ -55,17 +55,17 @@ public enum LoadBalancerConfigKey {
 
     GlobalMaxConn(Category.LoadBalancer, "global.maxconn", "LB max connection", Long.class, "4096", "Maximum per process number of concurrent connections, default is '4096'", ConfigKey.Scope.Network),
 
-    GlobalMaxPipes(Category.LoadBalancer, "global.maxpipes", "LB max pipes", Long.class, "<global.maxconn/4>", "Maximum number of per process pipes, default is 'maxconn/4'", ConfigKey.Scope.Network),
+    GlobalMaxPipes(Category.LoadBalancer, "global.maxpipes", "LB max pipes", Long.class, "1024", "Maximum number of per process pipes, default is 'maxconn/4'", ConfigKey.Scope.Network),
 
-    LbMaxConn(Category.LoadBalancer, "lb.maxconn", "LB max connection", Long.class, "<2000 in haproxy>", "Maximum per process number of concurrent connections per site/vm", ConfigKey.Scope.Network),
+    LbMaxConn(Category.LoadBalancer, "lb.maxconn", "LB max connection", Long.class, "2000", "Maximum per process number of concurrent connections per site/vm", ConfigKey.Scope.Network),
 
-    LbFullConn(Category.LoadBalancer, "lb.fullconn", "LB full connection", Long.class, "<maxconn/10 in haproxy>", "Specify at what backend load the servers will reach their maxconn, default is 'maxconn/10'", ConfigKey.Scope.Network),
+    LbFullConn(Category.LoadBalancer, "lb.fullconn", "LB full connection", Long.class, "10", "Specify at what backend load the servers will reach their maxconn, default is 'maxconn/10'", ConfigKey.Scope.Network),
 
-    LbServerMaxConn(Category.LoadBalancer, "lb.server.maxconn", "LB max connection per server", Long.class, "<0 means unlimited in haproxy>", "LB max connection per server, default is ''", ConfigKey.Scope.Network),
+    LbServerMaxConn(Category.LoadBalancer, "lb.server.maxconn", "LB max connection per server", Long.class, "0", "LB max connection per server, default is ''", ConfigKey.Scope.Network),
 
     LbServerMinConn(Category.LoadBalancer, "lb.server.minconn", "LB minimum connection per server", Long.class, "", "LB minimum connection per server, default is ''", ConfigKey.Scope.Network),
 
-    LbServerMaxQueue(Category.LoadBalancer, "lb.server.maxqueue", "Max conn wait in queue per server", Long.class, "<0 means unlimited in haproxy>", "Maximum number of connections which will wait in queue for this server, default is ''", ConfigKey.Scope.Network),
+    LbServerMaxQueue(Category.LoadBalancer, "lb.server.maxqueue", "Max conn wait in queue per server", Long.class, "0", "Maximum number of connections which will wait in queue for this server, default is ''", ConfigKey.Scope.Network),
 
     LbSslConfiguration(Category.LoadBalancer, "lb.ssl.configuration", "SSL configuration, could be 'none', 'old' or 'intermediate'", String.class, "Inherited from global setting" , "if 'none', no SSL configurations will be added, if 'old', refer to https://ssl-config.mozilla.org/#server=haproxy&server-version=1.8.17&config=old&openssl-version=1.0.2l if 'intermediate', refer to https://ssl-config.mozilla.org/#server=haproxy&server-version=1.8.17&config=intermediate&openssl-version=1.0.2l default value is 'none'", ConfigKey.Scope.Network);
 
